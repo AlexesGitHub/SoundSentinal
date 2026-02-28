@@ -7,6 +7,28 @@ import Header from "../../../components/header";
 export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleSubmit = async () => {
+  if (!file) return;
+  setUploading(true);
+  // This is where you'll eventually point to your Python API
+    try {
+      const formData = new FormData();
+      formData.append('audio', file);
+      
+      // Example: await fetch('http://localhost:5000/predict', { method: 'POST', body: formData });
+      console.log("Sending file to backend...");
+      
+      // Simulate a delay for now
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      alert("File sent to processing!");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleDragEnter = useCallback((e) => {
     e.preventDefault();
@@ -101,7 +123,22 @@ export default function UploadPage() {
             </div> */}
           </div>
         </div>
+        {file && (
+          <button 
+            onClick={handleSubmit}
+            disabled={uploading}
+            className="mt-6 w-full max-w-xs bg-neutral-800 text-white font-medium py-3 px-6 rounded-full hover:bg-neutral-900 transition-all disabled:bg-gray-400 flex items-center justify-center"
+          >
+            {uploading ? (
+              <>
+                <span className="animate-spin mr-2">◌</span> Processing...
+              </>
+            ) : 'Analyse Audio'}
+          </button>
+        )}
       </main>
     </div>
+
+    
   );
 }
