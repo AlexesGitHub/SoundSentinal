@@ -3,13 +3,14 @@
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Header from "../../../components/header";
+import { useRouter } from 'next/navigation';
 
 export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-
-  // 1. Add this function inside your UploadPage component
+  const router = useRouter();
+  
   const handleSubmit = async () => {
     if (!file) return;
     setUploading(true);
@@ -17,7 +18,7 @@ export default function UploadPage() {
     const formData = new FormData();
     // Ensure this key ('audio') matches request.files['audio'] in app.py
     formData.append('audio', file);
-
+    
     try {
       const response = await fetch('http://127.0.0.1:5000/predict', {
         method: 'POST',
@@ -29,9 +30,13 @@ export default function UploadPage() {
       if (data.error) {
         alert("Error: " + data.error);
       } else {
-        // You can now show this on the UI instead of an alert!
-        alert(`Result: ${data.prediction} \nConfidence: ${data.confidence}`);
-      }
+          // Redirect to results page with prediction and confidence as query params
+          const params = new URLSearchParams({
+            label: data.prediction,
+            score: data.confidence.replace('%', '') // Remove % for easier math
+          });
+          router.push(`/result?${params.toString()}`);
+        }
     } catch (err) {
       console.error("Connection error:", err);
       alert("Could not connect to the AI server. Is app.py running?");

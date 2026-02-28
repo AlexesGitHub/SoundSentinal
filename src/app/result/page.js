@@ -1,96 +1,81 @@
 'use client';
 
 import Header from '../../../components/header';
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React, { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
-
-
-const resultsData = {
-  unlikely: {
-    colorClass: 'text-green-500',
-    description: 'This audio is Unlikely to have been AI generated.',
-    barColor: 'bg-green-500'
-  },
-  possibly: {
-    colorClass: 'text-yellow-500',
-    description: 'We cannot be completely certain but there is a chance that this audio is AI generated.',
-    barColor: 'bg-yellow-500'
-  },
-  likely: {
-    colorClass: 'text-orange-500',
-    description: 'This audio is Likely to have been AI generated.',
-    barColor: 'bg-orange-500'
-  },
-  veryLikely: {
-    colorClass: 'text-red-500',
-    description: 'This audio is Very Likely to have been AI generated.',
-    barColor: 'bg-red-500'
-  }
+// 1. Data Definitions (The "Look")
+const RESULTS_CONFIG = {
+  unlikely:   { color: 'text-green-500',  bar: 'bg-green-500',  desc: 'This audio is Unlikely to have been AI generated.' },
+  possibly:   { color: 'text-yellow-500', bar: 'bg-yellow-500', desc: 'We cannot be certain, but there is a chance this is AI generated.' },
+  likely:     { color: 'text-orange-500', bar: 'bg-orange-500', desc: 'This audio is Likely to have been AI generated.' },
+  veryLikely: { color: 'text-red-500',    bar: 'bg-red-500',    desc: 'This audio is Very Likely to have been AI generated.' }
 };
 
+// 2. The Logic Helper (The "Brain")
+const getAnalysisCategory = (label, score) => {
+  if (label !== "Deepfake Audio") return 'unlikely';
+  if (score > 85) return 'veryLikely';
+  if (score > 60) return 'likely';
+  return 'possibly';
+};
+
+// 3. Helper to format the title (e.g., "veryLikely" -> "Very Likely")
+const formatTitle = (str) => str.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+
+function ResultContent() {
+  const searchParams = useSearchParams();
+  const label = searchParams.get('label');
+  const score = parseFloat(searchParams.get('score')) || 0;
+
+  const categoryKey = getAnalysisCategory(label, score);
+  const config = RESULTS_CONFIG[categoryKey];
+
+  return (
+    <div className="w-full max-w-2xl text-center">
+      {/* Main Result Heading */}
+      <h1 className="text-4xl sm:text-5xl font-bold mb-4">
+        Result: <span className={config.color}>{formatTitle(categoryKey)}</span>
+      </h1>
+
+      {/* Confidence Subtext */}
+      <p className="text-xl font-semibold mb-6 opacity-80">
+        AI Confidence Level: {score.toFixed(1)}%
+      </p>
+
+      {/* Description Box */}
+      <p className="text-sm sm:text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-lg mx-auto leading-relaxed">
+        {config.desc}
+      </p>
+
+      {/* Visual Progress Bar */}
+      <div className="w-full h-4 bg-gray-100 dark:bg-gray-800 rounded-full relative mb-12 shadow-inner overflow-hidden">
+        <div 
+          className={`absolute left-0 h-full ${config.bar} transition-all duration-1000 ease-out shadow-lg`} 
+          style={{ width: `${score}%` }}
+        />
+      </div>
+
+      {/* Action Button */}
+      <Link href="/upload">
+        <button className="bg-neutral-800 text-white font-medium py-4 px-10 rounded-full hover:bg-neutral-900 transition-all transform hover:scale-105 active:scale-95 shadow-md">
+          Analyze Another Audio
+        </button>
+      </Link>
+    </div>
+  );
+}
+
+// Final Export with Suspense (Required for useSearchParams in Next.js)
 export default function ResultPage() {
-  const [result, setResult] = useState('unlikely');
-
-
-  const currentResult = resultsData[result];
-
-
   return (
     <div className="flex min-h-screen flex-col items-center bg-white dark:bg-black font-sans">
       <Header />
-      <main className="flex flex-col items-center justify-start flex-1 w-full py-12 px-4 sm:px-8">
-        <div className="w-full max-w-2xl text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-8">
-            Result: <span className={currentResult.colorClass}>{result.charAt(0).toUpperCase() + result.slice(1).replace(/([A-Z])/g, ' $1')}</span>
-          </h1>
-
-          <p className="text-sm sm:text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-lg mx-auto">
-            {currentResult.description}
-          </p>
-
-          {/* This is the horizontal line and progress bar */}
-          <div className="w-full h-1 bg-gray-200 dark:bg-gray-700 relative mb-8">
-            <div className={`absolute left-0 h-full ${currentResult.barColor} transition-all duration-500 ease-in-out`} style={{
-              width: result === 'unlikely' ? '25%' :
-                     result === 'possibly' ? '50%' :
-                     result === 'likely' ? '75%' : '100%'
-            }}></div>
-          </div>
-          
-          {/* This is a button to display the results in your preview */}
-          <button className="bg-neutral-800 text-white font-medium py-3 px-6 rounded-full hover:bg-neutral-900 transition-colors">
-            Analyze another audio
-          </button>
-        </div>
-
-        {/* This section is for demonstration purposes only. You can remove it. */}
-        <div className="mt-12 flex flex-wrap justify-center gap-4">
-          <button
-            className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
-            onClick={() => setResult('unlikely')}
-          >
-            Show Unlikely
-          </button>
-          <button
-            className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
-            onClick={() => setResult('possibly')}
-          >
-            Show Possibly
-          </button>
-          <button
-            className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
-            onClick={() => setResult('likely')}
-          >
-            Show Likely
-          </button>
-          <button
-            className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
-            onClick={() => setResult('veryLikely')}
-          >
-            Show Very Likely
-          </button>
-        </div>
+      <main className="flex flex-col items-center justify-start flex-1 w-full py-16 px-6">
+        <Suspense fallback={<p>Loading results...</p>}>
+          <ResultContent />
+        </Suspense>
       </main>
     </div>
   );
