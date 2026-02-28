@@ -9,22 +9,32 @@ export default function UploadPage() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  // 1. Add this function inside your UploadPage component
   const handleSubmit = async () => {
-  if (!file) return;
-  setUploading(true);
-  // This is where you'll eventually point to your Python API
+    if (!file) return;
+    setUploading(true);
+
+    const formData = new FormData();
+    // Ensure this key ('audio') matches request.files['audio'] in app.py
+    formData.append('audio', file);
+
     try {
-      const formData = new FormData();
-      formData.append('audio', file);
-      
-      // Example: await fetch('http://localhost:5000/predict', { method: 'POST', body: formData });
-      console.log("Sending file to backend...");
-      
-      // Simulate a delay for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert("File sent to processing!");
+      const response = await fetch('http://127.0.0.1:5000/predict', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert("Error: " + data.error);
+      } else {
+        // You can now show this on the UI instead of an alert!
+        alert(`Result: ${data.prediction} \nConfidence: ${data.confidence}`);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Connection error:", err);
+      alert("Could not connect to the AI server. Is app.py running?");
     } finally {
       setUploading(false);
     }
