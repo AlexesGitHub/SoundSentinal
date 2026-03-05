@@ -60,7 +60,7 @@ function ResultContent() {
       {/* Action Button */}
       <Link href="/upload">
         <button className="bg-neutral-800 text-white font-medium py-4 px-10 rounded-full hover:bg-neutral-900 transition-all transform hover:scale-105 active:scale-95 shadow-md">
-          Analyze Another Audio
+          Analyse a different clip
         </button>
       </Link>
     </div>

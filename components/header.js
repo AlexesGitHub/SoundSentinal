@@ -14,7 +14,13 @@ export default function Header() {
       <div className="flex items-center">
         {/* Replace with your logo SVG in the public folder */}
         <div className="w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center">
-          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">LOGO</span>
+        <Image 
+          src="/logo (2).svg" 
+          alt="Sound Sentinel Logo" 
+          width={40} 
+          height={40} 
+          className="rounded-full"
+        />
         </div>
         <span className="ml-2 font-bold text-lg">SOUND SENTINEL</span>
       </div>
