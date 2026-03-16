@@ -48,3 +48,16 @@ checkpoints/
 *.pth
 
 ai_model/Baseline-AASIST/LA/
+
+# Python temporary files
+__pycache__/
+*.pyc
+
+# Installers and scripts
+*.exe
+get-pip.py
+
+# Generated outputs and audio
+my_baseline_scores.txt
+*.wav
+*.flac
