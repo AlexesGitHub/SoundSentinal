@@ -46,3 +46,5 @@ venv/
 data/
 checkpoints/
 *.pth
+
+ai_model/Baseline-AASIST/LA/
