@@ -38,14 +38,26 @@ with open(PROTOCOL_FILE, "r") as f:
 
 print(f"🎯 Found {len(lines)} files to process. Starting the engine...\n")
 
+# Check what we've already processed
+processed_files = set()
+if os.path.exists(OUTPUT_FILE):
+    with open(OUTPUT_FILE, "r") as f:
+        for line in f:
+            processed_files.add(line.split()[0]) # Grab the audio_id
+print(f"⏭️ Found {len(processed_files)} already processed. Resuming...")
+
 # 4. The Assembly Line
-with open(OUTPUT_FILE, "w") as out_file:
+with open(OUTPUT_FILE, "a") as out_file:
     # tqdm wraps around our list to give us a sweet progress bar
     with torch.no_grad():
         for line in tqdm(lines, desc="Processing Audio", unit="file"):
             pieces = line.strip().split()
             speaker_id = pieces[0]
             audio_id = pieces[1]
+
+            if audio_id in processed_files:
+                            continue
+
             environment = pieces[2]
             attack_type = pieces[3]
             true_label = pieces[4] # 'bonafide' or 'spoof'
