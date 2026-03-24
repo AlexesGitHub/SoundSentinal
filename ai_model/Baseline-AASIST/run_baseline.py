@@ -22,14 +22,20 @@ model = Model(config["model_config"]).to(device)
 model.load_state_dict(torch.load("models/weights/AASIST/best.pth", map_location=device))
 model.eval() # Lock it for inference!
 
-# Helper function to ensure audio is the exact length the AI expects (~4 seconds)
+# Helper function to ensure audio is exactly 4 seconds (looping, not silencing!)
 def pad_crop(waveform, max_len=64600):
-    if waveform.shape[1] > max_len:
+    num_samples = waveform.shape[1]
+    
+    # If it's too long, chop the end off
+    if num_samples >= max_len:
         return waveform[:, :max_len]
-    elif waveform.shape[1] < max_len:
-        padding = max_len - waveform.shape[1]
-        return torch.nn.functional.pad(waveform, (0, padding))
-    return waveform
+    
+    # If it's too short, loop (repeat) the audio until it's long enough
+    num_repeats = int(max_len / num_samples) + 1
+    repeated_waveform = waveform.repeat(1, num_repeats)
+    
+    # Trim the final looped version to exactly max_len
+    return repeated_waveform[:, :max_len]
 
 # 3. Read the master answer key
 print("📜 Loading protocol file...")

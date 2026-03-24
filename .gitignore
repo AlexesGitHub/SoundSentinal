@@ -61,3 +61,13 @@ get-pip.py
 my_baseline_scores.txt
 *.wav
 *.flac
+*.tsv
+
+# ASVspoof Data and Protocols
+*.tar
+*.tar.gz
+*.csv
+mini_protocol.txt
+
+# Generated Output Files
+*scores*.txt
